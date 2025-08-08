@@ -9,9 +9,12 @@ import java.util.Properties;
 
 public class MyDataBase {
 
-    private static  String URL;
-    private static  String USER;
-    private static  String PASS;
+    private static String URL;
+
+
+    
+    private static String USER;
+    private static String PASS;
 
     static {
         try (FileInputStream fis = new FileInputStream("config/db.properties")) {
@@ -23,7 +26,7 @@ public class MyDataBase {
             PASS = props.getProperty("db.password");
 
         } catch (IOException e) {
-            System.out.println("Failed to load DB config: " + e.getMessage());
+            System.out.println("Failed to load DB Password: " + e.getMessage());
         }
     }
 

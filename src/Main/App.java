@@ -1,10 +1,10 @@
 package Main;
 
-import ui.AddProductForm;
+import ui.UI;
 
 public class App {
 
     public static void main(String[] args) {
-        javax.swing.SwingUtilities.invokeLater(() -> new AddProductForm());
+        javax.swing.SwingUtilities.invokeLater(() -> new UI().createUI());
     }
 }
