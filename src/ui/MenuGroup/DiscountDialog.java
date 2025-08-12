@@ -16,7 +16,7 @@ public class DiscountDialog extends JDialog {
     public DiscountDialog(Frame parent) {
         super(parent, "Apply Discount", true);
         initUI();
-        setSize(300, 180);
+        setSize(300, 220);
         setLocationRelativeTo(parent);
     }
 
@@ -47,7 +47,7 @@ public class DiscountDialog extends JDialog {
         btnCancel.addActionListener(e -> dispose());
 
         JPanel panel = new JPanel(new GridLayout(4, 1, 5, 5));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 20, 10));
         panel.add(lbl);
         panel.add(txtDiscount);
 
@@ -56,7 +56,7 @@ public class DiscountDialog extends JDialog {
         radioPanel.add(rbPercent);
         panel.add(radioPanel);
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.add(btnCancel);
         buttonPanel.add(btnApply);
         panel.add(buttonPanel);

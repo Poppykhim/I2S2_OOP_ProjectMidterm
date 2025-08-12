@@ -1,6 +1,10 @@
 package ui;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.swing.*;
 import ui.MenuGroup.MenuLeft;
 import ui.MenuGroup.MenuRight;

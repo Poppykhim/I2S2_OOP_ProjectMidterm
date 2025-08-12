@@ -1,30 +1,24 @@
 package ui.MenuGroup;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.print.PageFormat;
+import java.awt.print.Paper;
+import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import java.awt.*;
 
-import org.w3c.dom.events.MouseEvent;
+import java.awt.event.MouseAdapter;
 
 public class MenuRight extends javax.swing.JPanel {
 
@@ -113,28 +107,30 @@ public class MenuRight extends javax.swing.JPanel {
 
         Discount.setText("0.00$");
 
-        Discount.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); // Make it look clickable
+        jLabel9.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); // Make it look clickable
 
-        // Discount.addMouseListener(new MouseAdapter() {
-        //     @Override
-        //     public void mouseClicked(MouseEvent e) {
-        //         DiscountDialog dialog = new DiscountDialog(SwingUtilities.getWindowAncestor(Discount));
-        //         dialog.setVisible(true);
-        //         if (dialog.isApplied()) {
-        //             double value = dialog.getDiscountValue();
-        //             boolean isPercent = dialog.isPercent();
-        //             if (isPercent) {
-        //                 applyDiscountPercent(value);
-        //             } else {
-        //                 applyDiscountFixed(value);
-        //             }
-        //             // Optional: update label text to reflect current discount
-        //             String discountText = isPercent ? String.format("Discount: %.0f%%", value)
-        //                     : String.format("Discount: $%.2f", value);
-        //             Discount.setText(discountText);
-        //         }
-        //     }
-        // });
+        jLabel9.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                java.awt.Window window = SwingUtilities.getWindowAncestor(jLabel9);
+                java.awt.Frame frame = (window instanceof java.awt.Frame) ? (java.awt.Frame) window : null;
+                DiscountDialog dialog = new DiscountDialog(frame);
+                dialog.setVisible(true);
+                if (dialog.isApplied()) {
+                    double value = dialog.getDiscountValue();
+                    boolean isPercent = dialog.isPercent();
+                    if (isPercent) {
+                        applyDiscountPercent(value);
+                    } else {
+                        applyDiscountFixed(value);
+                    }
+                    // Optional: update label text to reflect current discount
+                    String discountText = isPercent ? String.format("Discount: %.0f%%", value)
+                            : String.format("Discount: $%.2f", value);
+                    Discount.setText(discountText);
+                }
+            }
+        });
         GrandTotal.setText("0.00$");
 
         CompleteBtn.setText("Complete");
@@ -159,30 +155,36 @@ public class MenuRight extends javax.swing.JPanel {
                         .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addContainerGap()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout
+                                                .createSequentialGroup()
                                                 .addComponent(jLabel1)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 75, Short.MAX_VALUE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 75,
+                                                        Short.MAX_VALUE)
                                                 .addComponent(jLabel2))
                                         .addGroup(jPanel1Layout.createSequentialGroup()
                                                 .addComponent(jLabel7)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED,
+                                                        javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addComponent(GrandTotal))
                                         .addGroup(jPanel1Layout.createSequentialGroup()
                                                 .addComponent(jLabel8)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED,
+                                                        javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addComponent(SubTotal))
                                         .addGroup(jPanel1Layout.createSequentialGroup()
                                                 .addComponent(jLabel9)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED,
+                                                        javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addComponent(Discount))
-                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                                .addGap(0, 0, Short.MAX_VALUE)
-                                                .addComponent(SendBtn)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                                .addComponent(CompleteBtn)
-                                                .addGap(17, 17, 17)))
-                                .addContainerGap())
-        );
+                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING,
+                                                jPanel1Layout.createSequentialGroup()
+                                                        .addGap(0, 0, Short.MAX_VALUE)
+                                                        .addComponent(SendBtn)
+                                                        .addPreferredGap(
+                                                                javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                                        .addComponent(CompleteBtn)
+                                                        .addGap(17, 17, 17)))
+                                .addContainerGap()));
         jPanel1Layout.setVerticalGroup(
                 jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(jPanel1Layout.createSequentialGroup()
@@ -191,12 +193,14 @@ public class MenuRight extends javax.swing.JPanel {
                                         .addComponent(jLabel1)
                                         .addComponent(jLabel2))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(ProductCard, javax.swing.GroupLayout.PREFERRED_SIZE, 395, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(ProductCard, javax.swing.GroupLayout.PREFERRED_SIZE, 395,
+                                        javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                         .addComponent(jLabel8)
                                         .addComponent(SubTotal))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED,
+                                        javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                         .addComponent(jLabel9)
                                         .addComponent(Discount))
@@ -208,23 +212,22 @@ public class MenuRight extends javax.swing.JPanel {
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                         .addComponent(CompleteBtn)
                                         .addComponent(SendBtn))
-                                .addGap(37, 37, 37))
-        );
+                                .addGap(37, 37, 37)));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
                 layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
-                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, 0))
-        );
+                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                        javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, 0)));
         layout.setVerticalGroup(
                 layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
-                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 547, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 23, Short.MAX_VALUE))
-        );
+                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 547,
+                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 23, Short.MAX_VALUE)));
 
     }// </editor-fold>                        
 
@@ -237,8 +240,8 @@ public class MenuRight extends javax.swing.JPanel {
         printToPrinter();
     }
 
-    public void addProductItem(String name, int qty, double unitPrice, String ice, String sugar, String remark) {
-        String key = name + "|" + ice + "|" + sugar;
+    public void addProductItem(String type, String name, int qty, double unitPrice, String size, String ice, String sugar, String remark) {
+        String key = name + "|" + size + "|" + ice + "|" + sugar + "|" + remark;
         double total;
 
         if (productMap.containsKey(key)) {
@@ -294,7 +297,14 @@ public class MenuRight extends javax.swing.JPanel {
             line1.add(item.totalLabel, gbc);
 
             // Line 2: Options
-            JLabel optionsLabel = new JLabel("Ice: " + ice + " | Sugar: " + sugar);
+            JLabel optionsLabel;
+            if (type.equalsIgnoreCase("Drink")) {
+                optionsLabel = new JLabel(size + " | " + ice + " | " + sugar);
+            } else if (type.equalsIgnoreCase("Food")) {
+                optionsLabel = new JLabel(remark);
+            } else {
+                optionsLabel = new JLabel(""); // or handle other types
+            }
             optionsLabel.setFont(new Font("SansSerif", Font.ITALIC, 12));
             optionsLabel.setForeground(Color.DARK_GRAY);
             JPanel line2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -331,6 +341,7 @@ public class MenuRight extends javax.swing.JPanel {
         label.setFont(new Font("SansSerif", Font.BOLD, 13));
         return label;
     }
+
     private final Map<String, ProductItem> productMap = new HashMap<>();
 
     private static class ProductItem {
@@ -343,37 +354,156 @@ public class MenuRight extends javax.swing.JPanel {
         JLabel totalLabel;
     }
 
+    // public void printToPrinter() {
+    //     PrinterJob printerJob = PrinterJob.getPrinterJob();
+    //     printerJob.setJobName("Receipt Print");
+    //     // Define how to print this panel
+    //     printerJob.setPrintable((graphics, pageFormat, pageIndex) -> {
+    //         if (pageIndex > 0) {
+    //             return java.awt.print.Printable.NO_SUCH_PAGE;
+    //         }
+    //         // Translate to printable area and scale
+    //         java.awt.Graphics2D g2d = (java.awt.Graphics2D) graphics;
+    //         g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
+    //         double scaleX = pageFormat.getImageableWidth() / this.getWidth();
+    //         double scaleY = pageFormat.getImageableHeight() / this.getHeight();
+    //         double scale = Math.min(scaleX, scaleY);
+    //         g2d.scale(scale, scale);
+    //         this.printAll(g2d); // You can also use print() for cleaner layout
+    //         return java.awt.print.Printable.PAGE_EXISTS;
+    //     });
+    //     // Show print dialog for printer selection
+    //     if (printerJob.printDialog()) {
+    //         try {
+    //             printerJob.print(); // Print to selected printer
+    //         } catch (PrinterException e) {
+    //             e.printStackTrace();
+    //         }
+    //     }
+    // }
     public void printToPrinter() {
         PrinterJob printerJob = PrinterJob.getPrinterJob();
-        printerJob.setJobName("Receipt Print");
 
-        // Define how to print this panel
-        printerJob.setPrintable((graphics, pageFormat, pageIndex) -> {
-            if (pageIndex > 0) {
-                return java.awt.print.Printable.NO_SUCH_PAGE;
+        PageFormat pageFormat = printerJob.defaultPage();
+        Paper paper = new Paper();
+        double paperWidth = 226; // 80mm ≈ 226 points
+        double paperHeight = 800; // Enough height, will be clipped if too short
+        double margin = 10;
+
+        paper.setSize(paperWidth, paperHeight);
+        paper.setImageableArea(margin, margin, paperWidth - (2 * margin), paperHeight - (2 * margin));
+        pageFormat.setPaper(paper);
+        pageFormat.setOrientation(PageFormat.PORTRAIT);
+        // Create the printable content
+        Printable printable;
+        printable = new Printable() {
+            @Override
+            public int print(Graphics graphics, PageFormat pf, int pageIndex) throws PrinterException {
+                if (pageIndex > 0) {
+                    return java.awt.print.Printable.NO_SUCH_PAGE;
+                }
+
+                // Create a clean receipt layout for printing
+                Graphics2D g2d = (Graphics2D) graphics;
+                g2d.translate(pf.getImageableX(), pf.getImageableY());
+
+                // Set rendering hints
+                g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+                // Create a custom receipt layout instead of printing the entire panel
+                printReceipt(g2d, pf);
+
+                return java.awt.print.Printable.PAGE_EXISTS;
             }
+        };
 
-            // Translate to printable area and scale
-            java.awt.Graphics2D g2d = (java.awt.Graphics2D) graphics;
-            g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
+        // Show print preview dialog
+        PrintPreviewDialog previewDialog = new PrintPreviewDialog((Frame) SwingUtilities.getWindowAncestor(this),
+                printable, pageFormat);
+        java.awt.Window window = SwingUtilities.getWindowAncestor(this);
+        java.awt.Frame frame = (window instanceof java.awt.Frame) ? (java.awt.Frame) window : null;
+        previewDialog.setVisible(true);
+    }
+    // Add this method to create a cleaner receipt layout
 
-            double scaleX = pageFormat.getImageableWidth() / this.getWidth();
-            double scaleY = pageFormat.getImageableHeight() / this.getHeight();
-            double scale = Math.min(scaleX, scaleY);
-            g2d.scale(scale, scale);
+    private void printReceipt(Graphics2D g2d, PageFormat pageFormat) {
+        Font titleFont = new Font("SansSerif", Font.BOLD, 16);
+        Font normalFont = new Font("SansSerif", Font.PLAIN, 12);
+        Font smallFont = new Font("SansSerif", Font.PLAIN, 10);
 
-            this.printAll(g2d); // You can also use print() for cleaner layout
-            return java.awt.print.Printable.PAGE_EXISTS;
-        });
+        double width = pageFormat.getImageableWidth();
+        int y = 20;
+        int lineHeight = 15;
+        int margin = 0; // Already handled by imageable area
 
-        // Show print dialog for printer selection
-        if (printerJob.printDialog()) {
-            try {
-                printerJob.print(); // Print to selected printer
-            } catch (PrinterException e) {
-                e.printStackTrace();
+        // Column positions (fit in ~206 points width)
+        int colItem = margin;
+        int colQty = 120;
+        int colTotal = 170;
+
+        // Title
+        g2d.setFont(titleFont);
+        g2d.drawString("RECEIPT", (int) (width / 2) - 30, y);
+        y += lineHeight * 2;
+
+        // Order info
+        g2d.setFont(normalFont);
+        g2d.drawString("Order #XXXX", colItem, y);
+        g2d.drawString(new java.util.Date().toString(), colItem, y + lineHeight);
+        y += lineHeight * 3;
+
+        // Header
+        g2d.setFont(normalFont);
+        g2d.drawString("Item", colItem, y);
+        g2d.drawString("Qty", colQty, y);
+        g2d.drawString("Total", colTotal, y);
+        y += lineHeight;
+
+        // Divider
+        g2d.drawLine(colItem, y, (int) width, y);
+        y += 10;
+
+        // Items
+        g2d.setFont(smallFont);
+        for (ProductItem item : productMap.values()) {
+            g2d.drawString(item.name, colItem, y);
+            g2d.drawString(String.valueOf(item.quantity), colQty, y);
+            g2d.drawString(String.format("%.2f$", item.quantity * item.unitPrice), colTotal, y);
+            y += lineHeight;
+
+            // Options
+            if (item.ice != null || item.sugar != null) {
+                g2d.setColor(Color.GRAY);
+                g2d.drawString("Ice: " + item.ice + " | Sugar: " + item.sugar, colItem + 10, y);
+                g2d.setColor(Color.BLACK);
+                y += lineHeight;
             }
         }
+
+        // Totals
+        y += 10;
+        g2d.drawLine(colItem, y, (int) width, y);
+        y += lineHeight;
+
+        g2d.setFont(normalFont);
+        g2d.drawString("Sub Total:", colItem, y);
+        drawRightAligned(g2d, SubTotal.getText(), (int) width, y);
+        y += lineHeight;
+
+        g2d.drawString("Discount:", colItem, y);
+        drawRightAligned(g2d, Discount.getText(), (int) width, y);
+        y += lineHeight;
+
+        g2d.setFont(titleFont);
+        g2d.drawString("Grand Total:", colItem, y);
+        drawRightAligned(g2d, GrandTotal.getText(), (int) width, y);
+
+    }
+
+    private void drawRightAligned(Graphics2D g2d, String text, int rightEdge, int y) {
+        FontMetrics fm = g2d.getFontMetrics();
+        int textWidth = fm.stringWidth(text);
+        g2d.drawString(text, rightEdge - textWidth, y);
     }
 
     public void applyDiscountPercent(double percent) {

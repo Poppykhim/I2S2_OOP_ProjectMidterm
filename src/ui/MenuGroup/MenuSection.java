@@ -8,15 +8,19 @@ import DAO.ProductDAO;
 import Storage.Product;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -24,10 +28,19 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.JViewport;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.plaf.basic.BasicScrollBarUI;
+
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.Cursor;
+import javax.swing.JViewport;
+
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Menu;
 
 /**
@@ -86,7 +99,7 @@ public class MenuSection extends javax.swing.JPanel {
         jPanel1.setPreferredSize(new java.awt.Dimension(640, 448));
 
         jLabel1.setFont(new java.awt.Font("Segoe UI Historic", 1, 18)); // NOI18N
-        jLabel1.setText("Coffee Menu");
+        jLabel1.setText("Menu");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -131,37 +144,164 @@ public class MenuSection extends javax.swing.JPanel {
     }// </editor-fold>    
 
     public void loadCategoryButtons() {
-        categoryContainer.removeAll(); // Clear existing buttons
+        categoryContainer.removeAll();
+
         ProductDAO DAO = new ProductDAO();
-        List<String> categories = DAO.fetchCategories();
+        final List<String> categoriesTemp = DAO.fetchCategories();
+        final List<String> categories = (categoriesTemp == null) ? java.util.Collections.emptyList() : categoriesTemp;
 
-        int totalWidth = 589; // Fixed width
-        int spacing = 10; // Horizontal gap from layout
-        int totalGap = (categories.size() - 1) * spacing;
-        int buttonWidth = (totalWidth - totalGap) / categories.size();
+        // UI sizing config
+        final int visibleButtons = 5;             // exactly 5 visible at a time
+        final int totalVisibleWidth = 589;        // the width you used in layout
+        final int spacing = 10;                   // gap between buttons
+        final int buttonHeight = 36;              // height for each category button
 
-        System.out.println("Button width: " + buttonWidth);
+        // Compute button width *based on 5 visible*, not total count
+        int totalGap = (visibleButtons - 1) * spacing;
+        int buttonWidth = (totalVisibleWidth - totalGap) / visibleButtons;
+
+        // Set layout and background for the container that will hold buttons
+        categoryContainer.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, spacing, 6));
+        categoryContainer.setBackground(CategoriesPanel.getBackground());
+
+        // Create buttons and add
         for (String cat : categories) {
-            JButton btn = new RoundedButton(cat, 20);
+            JButton btn = new RoundedButton(cat, 25);
             btn.setFocusPainted(false);
-            btn.setPreferredSize(new java.awt.Dimension(buttonWidth, 20)); // shrink evenly
-            btn.setBackground(new java.awt.Color(255, 153, 51));
+            btn.setPreferredSize(new Dimension(buttonWidth, buttonHeight));
+            btn.setMinimumSize(new Dimension(buttonWidth, buttonHeight));
+            btn.setMaximumSize(new Dimension(buttonWidth, buttonHeight));
+            btn.setBackground(new Color(255, 153, 51));
+            btn.setForeground(Color.WHITE);
             btn.addActionListener(e -> loadProductsByCategory(cat));
             categoryContainer.add(btn);
         }
+
+        // Make the container wide enough to hold all buttons in one row (so viewport will show only part)
+        int totalButtonsWidth = categories.size() * (buttonWidth + spacing) + spacing;
+        int viewHeight = buttonHeight + 12; // add a bit for vertical padding
+        categoryContainer.setPreferredSize(new Dimension(Math.max(totalVisibleWidth, totalButtonsWidth), viewHeight));
+
+        // Put categoryContainer as the viewport view (safe even if previously set)
+        CategoriesPanel.setViewportView(categoryContainer);
+
+        // Hide scrollbars visually, but keep scrolling functional via listeners
+        CategoriesPanel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        CategoriesPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        CategoriesPanel.setBorder(null);
+        CategoriesPanel.setPreferredSize(new Dimension(totalVisibleWidth, viewHeight));
+
+        // Tune the (hidden) horizontal scrollbar increment in case it's used
+        JScrollBar hBar = CategoriesPanel.getHorizontalScrollBar();
+        hBar.setUnitIncrement(20);
+
+        // Mouse wheel -> horizontal scroll (nice for trackpad / wheel)
+        // If there are <= visibleButtons, do nothing
+        CategoriesPanel.addMouseWheelListener(e -> {
+            if (categories.size() <= visibleButtons) {
+                return;
+            }
+            int rotation = e.getUnitsToScroll(); // positive = down, negative = up
+            int delta = rotation * hBar.getUnitIncrement();
+            int newVal = hBar.getValue() + delta;
+            newVal = Math.max(0, Math.min(newVal, hBar.getMaximum()));
+            hBar.setValue(newVal);
+        });
+
+        // Click-and-drag panning (like a swipe) — attach to the viewport so it receives events
+        // JViewport viewport = CategoriesPanel.getViewport();
+        // MouseAdapter ma = new MouseAdapter() {
+        //     private int startX;
+        //     private int startScroll;
+        //     @Override
+        //     public void mousePressed(MouseEvent e) {
+        //         // switch cursor to hand while dragging
+        //         viewport.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        //         startX = e.getX();
+        //         startScroll = hBar.getValue();
+        //     }
+        //     @Override
+        //     public void mouseDragged(MouseEvent e) {
+        //         int dx = startX - e.getX();
+        //         int nv = startScroll + dx;
+        //         nv = Math.max(0, Math.min(nv, hBar.getMaximum()));
+        //         hBar.setValue(nv);
+        //     }
+        //     @Override
+        //     public void mouseReleased(MouseEvent e) {
+        //         viewport.setCursor(Cursor.getDefaultCursor());
+        //     }
+        // };
+        // // add both listeners so press and drag are captured
+        // viewport.addMouseListener(ma);
+        // viewport.addMouseMotionListener(ma);
+        // revalidate and repaint
         categoryContainer.revalidate();
-        productContainer.repaint();
+        categoryContainer.repaint();
+        CategoriesPanel.revalidate();
+        CategoriesPanel.repaint();
     }
 
     public void loadProductsByCategory(String categoryName) {
+        jLabel1.setText(categoryName + " Menu");
         productContainer.removeAll();
-        ProductDAO DAO = new ProductDAO();
-        List<Product> filtered = DAO.getProductsByCategory(categoryName);
-        for (Product p : filtered) {
-            productContainer.add(new ProductPanel(p));
-        }
+
+        // Show loading message
+        JLabel loadingLabel = new JLabel("Loading...", SwingConstants.CENTER);
+        loadingLabel.setFont(new Font("Arial", Font.ITALIC, 16));
+        productContainer.setLayout(new BorderLayout());
+        productContainer.add(loadingLabel, BorderLayout.CENTER);
         productContainer.revalidate();
         productContainer.repaint();
+
+        SwingWorker<List<Product>, Void> worker = new SwingWorker<>() {
+            @Override
+            protected List<Product> doInBackground() {
+                ProductDAO DAO = new ProductDAO();
+                return DAO.getProductsByCategory(categoryName);
+            }
+
+            @Override
+            protected void done() {
+                productContainer.removeAll();
+                try {
+                    List<Product> products = get();
+                    productContainer.setLayout(new GridLayout(0, 2, 10, 5));
+                    for (Product p : products) {
+                        productContainer.add(new ProductPanel(p));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    JLabel errorLabel = new JLabel("Failed to load products.", SwingConstants.CENTER);
+                    productContainer.add(errorLabel);
+                }
+                productContainer.revalidate();
+                productContainer.repaint();
+            }
+        };
+
+        worker.execute();
+    }
+
+    public enum CustomizationType {
+        DRINK,
+        FOOD,
+        NONE // for categories with no customization
+    }
+
+    public CustomizationType getCustomizationType(String category) {
+        if (category == null) {
+            return CustomizationType.NONE;
+        }
+
+        return switch (category.toLowerCase()) {
+            case "hot drink", "iced drink", "smoothie", "frappe" ->
+                CustomizationType.DRINK;
+            case "rice", "snack", "dessert", "signature", "combo set" ->
+                CustomizationType.FOOD;
+            default ->
+                CustomizationType.NONE;
+        };
     }
 
     public class ProductPanel extends RoundedPanel {
@@ -177,8 +317,6 @@ public class MenuSection extends javax.swing.JPanel {
             if (product.getImagePath() != null && !product.getImagePath().isEmpty()) {
                 String normalizedPath = product.getImagePath().replace("\\", "/");
                 imageLabel.setIcon(resizeImage(normalizedPath, 50, 50));
-                System.out.println("Image path: " + product.getImagePath());
-                System.out.println("Image path: " + normalizedPath);
             } else {
                 imageLabel.setIcon(resizeImage("images/1753664187921_No_Image.jpg", 50, 50)); // default placeholder
             }
@@ -193,20 +331,39 @@ public class MenuSection extends javax.swing.JPanel {
             placeOrderButton.setFocusPainted(false);
             placeOrderButton.addActionListener(e -> {
                 JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-                ProductCustomizationDialog dialog = new ProductCustomizationDialog(parentFrame);
-                dialog.setVisible(true);
-
-                if (dialog.isConfirmed()) {
-                    String sugar = dialog.getSugarLevel();
-                    String ice = dialog.getIceLevel();
-                    rightPanel.addProductItem(product.getName(), 1, product.getPrice(), ice, sugar, "");
+                CustomizationType type = getCustomizationType(product.getCategory());
+                switch (type) {
+                    case DRINK:
+                        DrinkCustomizationDialog dialog = new DrinkCustomizationDialog(parentFrame);
+                        dialog.setVisible(true);
+                        if (dialog.isConfirmed()) {
+                            String sugar = dialog.getSelectedSugar();
+                            String size = dialog.getSelectedSize();
+                            String ice = dialog.getSelectedIce();
+                            String remark = "";
+                            rightPanel.addProductItem("Drink", product.getName(), 1, product.getPrice(), size, ice, sugar, remark);
+                        }
+                        break;
+                    case FOOD:
+                        FoodCustomizationDialog foodDialog = new FoodCustomizationDialog(parentFrame);
+                        foodDialog.setVisible(true);
+                        if (foodDialog.isConfirmed()) {
+                            String note = foodDialog.getNote();
+                            rightPanel.addProductItem("Food", product.getName(), 1, product.getPrice(), "", "", "", note);
+                        }
+                        break;
+                    case NONE:
+                    default:
+                        // No customization, just add directly
+                        rightPanel.addProductItem("none", product.getName(), 1, product.getPrice(), "", "", "", "");
+                        break;
                 }
             });
 
             JPanel eastPanel = new JPanel();
             eastPanel.setLayout(new BorderLayout());
-            eastPanel.setOpaque(false);  // transparent panel
-            eastPanel.add(Box.createVerticalGlue(), BorderLayout.CENTER);  // push to bottom
+            eastPanel.setOpaque(false); // transparent panel
+            eastPanel.add(Box.createVerticalGlue(), BorderLayout.CENTER); // push to bottom
             eastPanel.add(placeOrderButton, BorderLayout.SOUTH);
             eastPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 5));
             // Layout all in a vertical stack
@@ -222,11 +379,24 @@ public class MenuSection extends javax.swing.JPanel {
         }
     }
 
+    private final java.util.Map<String, ImageIcon> imageCache = new java.util.HashMap<>();
+
     public ImageIcon resizeImage(String imagePath, int width, int height) {
+        // ImageIcon icon = new ImageIcon(imagePath);
+        // Image img = icon.getImage();
+        // Image resizedImg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        // return new ImageIcon(resizedImg);
+
+        String key = imagePath + "_" + width + "x" + height;
+        if (imageCache.containsKey(key)) {
+            return imageCache.get(key);
+        }
         ImageIcon icon = new ImageIcon(imagePath);
         Image img = icon.getImage();
         Image resizedImg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-        return new ImageIcon(resizedImg);
+        ImageIcon resizedIcon = new ImageIcon(resizedImg);
+        imageCache.put(key, resizedIcon);
+        return resizedIcon;
     }
 
     public class RoundedButton extends JButton {
