@@ -13,7 +13,10 @@ import java.util.stream.Collectors;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import java.awt.*;
@@ -125,8 +128,8 @@ public class MenuRight extends javax.swing.JPanel {
                         applyDiscountFixed(value);
                     }
                     // Optional: update label text to reflect current discount
-                    String discountText = isPercent ? String.format("Discount: %.0f%%", value)
-                            : String.format("Discount: $%.2f", value);
+                    String discountText = isPercent ? String.format("%.0f%%", value)
+                            : String.format("$%.2f", value);
                     Discount.setText(discountText);
                 }
             }
@@ -240,7 +243,7 @@ public class MenuRight extends javax.swing.JPanel {
         printToPrinter();
     }
 
-    public void addProductItem(String type, String name, int qty, double unitPrice, String size, String ice, String sugar, String remark) {
+    public void addProductItem(String type, String name, int qty, double unitPrice, String size, String ice, String sugar, String remark, int maxQuantity) {
         String key = name + "|" + size + "|" + ice + "|" + sugar + "|" + remark;
         double total;
 
@@ -254,13 +257,14 @@ public class MenuRight extends javax.swing.JPanel {
         } else {
             // Create new entry
             ProductItem item = new ProductItem();
+            item.type = type;
             item.name = name;
             item.ice = ice;
             item.sugar = sugar;
             item.remark = remark;
             item.unitPrice = unitPrice;
             item.quantity = qty;
-
+            item.size = size;
             total = unitPrice * qty;
 
             JPanel itemPanel = new JPanel(new BorderLayout());
@@ -288,8 +292,39 @@ public class MenuRight extends javax.swing.JPanel {
 
             gbc.gridx = 2;
             gbc.weightx = 0.2;
-            item.qtyLabel = new JLabel(String.valueOf(qty));
-            line1.add(item.qtyLabel, gbc);
+            // item.qtyLabel = new JLabel(String.valueOf(qty));
+            // line1.add(item.qtyLabel, gbc);
+
+            // Quantity Spinner
+            SpinnerNumberModel qtyModel = new SpinnerNumberModel(qty, 1, maxQuantity + 1, 1); // start, min, max, step
+            JSpinner qtySpinner = new JSpinner(qtyModel);
+            qtySpinner.setPreferredSize(new Dimension(50, 25));
+            item.qtySpinner = qtySpinner; // store reference if needed
+
+            // Listen for changes
+            qtySpinner.addChangeListener(e -> {
+                Frame parentFrame = (Frame) SwingUtilities.getWindowAncestor(this);
+                int newQty = (int) qtySpinner.getValue();
+                item.quantity = newQty;
+                double newTotal = newQty * item.unitPrice;
+                item.totalLabel.setText(String.format("%.2f$", newTotal));
+
+                if (newQty > maxQuantity) {
+                    JOptionPane.showMessageDialog(
+                            parentFrame,
+                            "Only " + maxQuantity + " item(s) in stock.",
+                            "Stock Limit",
+                            JOptionPane.WARNING_MESSAGE
+                    );
+                    qtySpinner.setValue(maxQuantity); // reset to max
+                    return; // don't update totals
+                }
+
+                // Recalculate subtotal
+                recalcSubtotal();
+            });
+
+            line1.add(qtySpinner, gbc);
 
             gbc.gridx = 3;
             gbc.weightx = 0;
@@ -328,12 +363,20 @@ public class MenuRight extends javax.swing.JPanel {
     }
 
     private double subtotal = 0.0;
-    private double discount = 0.0; // You can dynamically change this later
+    private double discount = 0.0; // You can dynamically change this laterC
 
     private void updateTotals() {
         SubTotal.setText(String.format("%.2f$", subtotal));
         Discount.setText(String.format("%.2f$", discount));
         GrandTotal.setText(String.format("%.2f$", subtotal - discount));
+    }
+
+    private void recalcSubtotal() {
+        subtotal = 0;
+        for (ProductItem p : productMap.values()) {
+            subtotal += p.quantity * p.unitPrice;
+        }
+        updateTotals();
     }
 
     private JLabel createHeaderLabel(String text) {
@@ -346,12 +389,14 @@ public class MenuRight extends javax.swing.JPanel {
 
     private static class ProductItem {
 
-        String name, ice, sugar, remark;
+        String name, ice, sugar, remark, type, size;
         int quantity;
         double unitPrice;
         JPanel panel;
         JLabel qtyLabel;
         JLabel totalLabel;
+        JSpinner qtySpinner;
+
     }
 
     // public void printToPrinter() {
@@ -387,7 +432,7 @@ public class MenuRight extends javax.swing.JPanel {
         PageFormat pageFormat = printerJob.defaultPage();
         Paper paper = new Paper();
         double paperWidth = 226; // 80mm ≈ 226 points
-        double paperHeight = 800; // Enough height, will be clipped if too short
+        double paperHeight = 800;
         double margin = 10;
 
         paper.setSize(paperWidth, paperHeight);
@@ -471,13 +516,36 @@ public class MenuRight extends javax.swing.JPanel {
             g2d.drawString(String.format("%.2f$", item.quantity * item.unitPrice), colTotal, y);
             y += lineHeight;
 
-            // Options
-            if (item.ice != null || item.sugar != null) {
+            if (item.type.equalsIgnoreCase("Drink")) {
+                if (item.ice != null || item.sugar != null) {
+                    g2d.setColor(Color.GRAY);
+                    g2d.drawString("Ice: " + item.ice + " | Sugar: " + item.sugar, colItem + 10, y);
+                    y = y + lineHeight;
+                    g2d.drawString("Size: " + item.size, colItem + 10, y);
+                    g2d.setColor(Color.BLACK);
+                    y += lineHeight;
+                }
+            } else if (item.type.equalsIgnoreCase("Food")) {
+                if (item.remark != null && !item.remark.isEmpty()) {
+                    g2d.setColor(Color.GRAY);
+                    g2d.drawString("" + item.remark, colItem + 10, y);
+                    g2d.setColor(Color.BLACK);
+                    y += lineHeight;
+                }
+            } else {
                 g2d.setColor(Color.GRAY);
-                g2d.drawString("Ice: " + item.ice + " | Sugar: " + item.sugar, colItem + 10, y);
+                g2d.drawString("", colItem + 10, y);
                 g2d.setColor(Color.BLACK);
                 y += lineHeight;
             }
+
+            // Options
+            // if (item.ice != null || item.sugar != null) {
+            //     g2d.setColor(Color.GRAY);
+            //     g2d.drawString("Ice: " + item.ice + " | Sugar: " + item.sugar, colItem + 10, y);
+            //     g2d.setColor(Color.BLACK);
+            //     y += lineHeight;
+            // }
         }
 
         // Totals

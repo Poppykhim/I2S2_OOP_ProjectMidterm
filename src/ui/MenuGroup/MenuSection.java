@@ -341,7 +341,7 @@ public class MenuSection extends javax.swing.JPanel {
                             String size = dialog.getSelectedSize();
                             String ice = dialog.getSelectedIce();
                             String remark = "";
-                            rightPanel.addProductItem("Drink", product.getName(), 1, product.getPrice(), size, ice, sugar, remark);
+                            rightPanel.addProductItem("Drink", product.getName(), 1, product.getPrice(), size, ice, sugar, remark, product.getQuantity());
                         }
                         break;
                     case FOOD:
@@ -349,13 +349,13 @@ public class MenuSection extends javax.swing.JPanel {
                         foodDialog.setVisible(true);
                         if (foodDialog.isConfirmed()) {
                             String note = foodDialog.getNote();
-                            rightPanel.addProductItem("Food", product.getName(), 1, product.getPrice(), "", "", "", note);
+                            rightPanel.addProductItem("Food", product.getName(), 1, product.getPrice(), "", "", "", note, product.getQuantity());
                         }
                         break;
                     case NONE:
                     default:
                         // No customization, just add directly
-                        rightPanel.addProductItem("none", product.getName(), 1, product.getPrice(), "", "", "", "");
+                        rightPanel.addProductItem("none", product.getName(), 1, product.getPrice(), "", "", "", "", product.getQuantity());
                         break;
                 }
             });

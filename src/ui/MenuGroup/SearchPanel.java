@@ -55,7 +55,7 @@ public class SearchPanel extends javax.swing.JPanel {
         jScrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
         jList1.setCellRenderer(new ColoredListRenderer());
         jList1.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = {"Table 1", "Table 2", "Table 3", "Table 4", "Table 6", "Table 7", "Table 8", "Table 9", "Table 10"};
+            String[] strings = {"Table 1", "Table 2", "Table 3", "Table 4", "Table 5", "Table 6", "Table 7", "Table 8", "Table 9", "Table 10"};
 
             public int getSize() {
                 return strings.length;
