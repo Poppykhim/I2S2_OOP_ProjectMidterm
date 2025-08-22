@@ -101,7 +101,7 @@ public class ProductDAO {
     }
 
     public void loadCategoriesIntoComboBox(JComboBox<String> comboBox, boolean includeAll) {
-        String sql = "SELECT DISTINCT name FROM category ORDER BY name ASC";
+        String sql = "SELECT name FROM category ORDER BY id ASC"; //ORDER BY name ASC
         try (Connection conn = MyDataBase.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             ResultSet rs = stmt.executeQuery();
             comboBox.removeAllItems();
@@ -161,13 +161,14 @@ public class ProductDAO {
 
     public List<String> fetchCategories() {
         List<String> categories = new ArrayList<>();
-        try (Connection con = MyDataBase.getConnection(); PreparedStatement stmt = con.prepareStatement("SELECT name FROM category"); ResultSet rs = stmt.executeQuery()) {
+        try (Connection con = MyDataBase.getConnection(); PreparedStatement stmt = con.prepareStatement("SELECT name FROM category ORDER BY id ASC"); ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 categories.add(rs.getString("name"));
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+        // Collections.reverse(categories);
         return categories;
     }
 

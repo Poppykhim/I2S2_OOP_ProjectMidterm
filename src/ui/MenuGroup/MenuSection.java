@@ -98,8 +98,11 @@ public class MenuSection extends javax.swing.JPanel {
 
         jPanel1.setPreferredSize(new java.awt.Dimension(640, 448));
 
-        jLabel1.setFont(new java.awt.Font("Segoe UI Historic", 1, 18)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Segoe UI Historic", 1, 22)); // NOI18N
         jLabel1.setText("Menu");
+        jLabel1.setBackground(new java.awt.Color(255, 189, 89));
+        jLabel1.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        jLabel1.setOpaque(true);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -108,7 +111,7 @@ public class MenuSection extends javax.swing.JPanel {
                         .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                         .addGroup(jPanel1Layout.createSequentialGroup()
-                                                .addGap(42, 42, 42)
+                                                .addGap(50, 50, 50)
                                                 .addComponent(jLabel1))
                                         .addGroup(jPanel1Layout.createSequentialGroup()
                                                 .addGap(32, 32, 32)
@@ -124,8 +127,9 @@ public class MenuSection extends javax.swing.JPanel {
                                 .addComponent(CategoriesPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jLabel1)
-                                .addGap(25, 25, 25)
-                                .addComponent(MenuPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                // .addGap(-10, -10, -10)
+                                .addGap(0, 0, 0)
+                                .addComponent(MenuPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 326, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addContainerGap(23, Short.MAX_VALUE))
         );
 
@@ -164,8 +168,10 @@ public class MenuSection extends javax.swing.JPanel {
         categoryContainer.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, spacing, 6));
         categoryContainer.setBackground(CategoriesPanel.getBackground());
 
+        loadProductsByCategory(categories.get(0));
         // Create buttons and add
         for (String cat : categories) {
+            System.out.println(cat);
             JButton btn = new RoundedButton(cat, 25);
             btn.setFocusPainted(false);
             btn.setPreferredSize(new Dimension(buttonWidth, buttonHeight));

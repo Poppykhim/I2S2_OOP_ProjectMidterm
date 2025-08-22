@@ -4,11 +4,11 @@
  */
 package ui.MenuGroup;
 
-import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import javax.swing.*;
+import ui.ProductGroup.AddProduct;
 
 /**
  *
@@ -36,7 +36,7 @@ public class SearchPanel extends javax.swing.JPanel {
 
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList<>();
+        jList1 = new javax.swing.JComboBox<>();
         jLabel1 = new javax.swing.JLabel();
         jPanel2 = new RoundedPanel(45);
         jPanel2.setBackground(bgColor);
@@ -53,18 +53,12 @@ public class SearchPanel extends javax.swing.JPanel {
         // jList1.setBorder(BorderFactory.createEmptyBorder());
         jScrollPane1.setBorder(BorderFactory.createEmptyBorder());
         jScrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-        jList1.setCellRenderer(new ColoredListRenderer());
-        jList1.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = {"Table 1", "Table 2", "Table 3", "Table 4", "Table 5", "Table 6", "Table 7", "Table 8", "Table 9", "Table 10"};
-
-            public int getSize() {
-                return strings.length;
-            }
-
-            public String getElementAt(int i) {
-                return strings[i];
-            }
-        });
+        jList1.setModel(new DefaultComboBoxModel<>(new String[]{
+            "Table 1", "Table 2", "Table 3", "Table 4", "Table 5",
+            "Table 6", "Table 7", "Table 8", "Table 9", "Table 10"
+        }));
+        AddProduct.styleComboBox(jList1); // Optionally, remove border like your JScrollPane
+        jList1.setBorder(BorderFactory.createEmptyBorder());
         jScrollPane1.setViewportView(jList1);
 
         jLabel1.setFont(new java.awt.Font("Segoe UI Historic", 1, 14)); // NOI18N
@@ -161,14 +155,12 @@ public class SearchPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
     }
 
-    public JList<String> getTableList() {
-        return jList1;
-    }
-
-    public String getSelectedTable() {
-        return jList1.getSelectedValue();
-    }
-
+    // public JList<String> getTableList() {
+    //     return jList1;
+    // }
+    // public String getSelectedTable() {
+    //     return jList1.getSelectedValue();
+    // }
     public class RoundedPanel extends JPanel {
 
         private int cornerRadius = 20; // radius of the rounded corner
@@ -232,7 +224,7 @@ public class SearchPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify                     
     private javax.swing.JLabel clear;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JList<String> jList1;
+    private javax.swing.JComboBox<String> jList1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
