@@ -301,7 +301,7 @@ public class MenuSection extends javax.swing.JPanel {
         }
 
         return switch (category.toLowerCase()) {
-            case "hot drink", "iced drink", "smoothie", "frappe" ->
+            case "hot drink", "iced drink", "smoothie", "frappe " ->
                 CustomizationType.DRINK;
             case "rice", "snack", "dessert", "signature", "combo set" ->
                 CustomizationType.FOOD;

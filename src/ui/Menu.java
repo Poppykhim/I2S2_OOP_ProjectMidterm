@@ -16,6 +16,8 @@ public class Menu extends JPanel {
     private final MenuSection middlePanel;
     private final MenuRight rightPanel;
 
+    ;
+
     public Menu(JPanel mainPanel, CardLayout layout, UI ui) {
         setLayout(new BorderLayout());
 
@@ -27,7 +29,7 @@ public class Menu extends JPanel {
 
         // === Center Panels ===
         middlePanel = new MenuSection(rightPanel); // Main content
-        JPanel upPanel = new SearchPanel(); // Search bar at top
+        JPanel upPanel = new SearchPanel(rightPanel); // Search bar at top
 
         // === Wrapper Panel ===
         JPanel wrapper = new JPanel(new BorderLayout());

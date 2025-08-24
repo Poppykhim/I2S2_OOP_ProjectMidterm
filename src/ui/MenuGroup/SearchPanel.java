@@ -1,6 +1,6 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
+    * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+    * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package ui.MenuGroup;
 
@@ -9,6 +9,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.*;
 import ui.ProductGroup.AddProduct;
+import ui.MenuGroup.MenuRight;
 
 /**
  *
@@ -17,11 +18,13 @@ import ui.ProductGroup.AddProduct;
 public class SearchPanel extends javax.swing.JPanel {
 
     private final Color bgColor = new Color(255, 189, 89);
+    private final MenuRight menuRight;
 
     /**
      * Creates new form SearchPanel
      */
-    public SearchPanel() {
+    public SearchPanel(MenuRight menuRight) {
+        this.menuRight = menuRight;
         initComponents();
     }
 
@@ -59,6 +62,13 @@ public class SearchPanel extends javax.swing.JPanel {
         }));
         AddProduct.styleComboBox(jList1); // Optionally, remove border like your JScrollPane
         jList1.setBorder(BorderFactory.createEmptyBorder());
+        jList1.addActionListener(e -> {
+            String selectedTable = (String) jList1.getSelectedItem();
+            if (selectedTable != null) {
+                menuRight.setCurrentTable(selectedTable);
+            }
+        });
+
         jScrollPane1.setViewportView(jList1);
 
         jLabel1.setFont(new java.awt.Font("Segoe UI Historic", 1, 14)); // NOI18N

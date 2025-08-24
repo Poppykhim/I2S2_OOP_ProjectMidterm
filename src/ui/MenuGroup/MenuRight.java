@@ -7,6 +7,7 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -386,6 +387,9 @@ public class MenuRight extends javax.swing.JPanel {
     }
 
     private final Map<String, ProductItem> productMap = new HashMap<>();
+    private final Map<String, Map<String, ProductItem>> tableOrders = new HashMap<>();
+    private final Map<String, Double> tableSubtotals = new HashMap<>();
+    private String currentTable;
 
     private static class ProductItem {
 
@@ -397,6 +401,82 @@ public class MenuRight extends javax.swing.JPanel {
         JLabel totalLabel;
         JSpinner qtySpinner;
 
+    }
+
+    public void setCurrentTable(String tableName) {
+
+        if (currentTable != null) {
+            tableOrders.put(currentTable, new HashMap<>(productMap)); // store a copy
+            tableSubtotals.put(currentTable, subtotal);
+        }
+
+        this.currentTable = tableName;
+
+        // Ensure this table has its own cart
+        tableOrders.putIfAbsent(tableName, new HashMap<>());
+        tableSubtotals.putIfAbsent(tableName, 0.0);
+
+        // IMPORTANT: Clear current productMap and sync with selected table's data
+        productMap.clear();
+
+        // Load the selected table's orders
+        Map<String, ProductItem> tableProducts = tableOrders.get(tableName);
+        if (tableProducts != null) {
+            // Copy the table's products to current productMap
+            for (Map.Entry<String, ProductItem> entry : tableProducts.entrySet()) {
+                productMap.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        // Load subtotal for this table
+        subtotal = tableSubtotals.getOrDefault(tableName, 0.0);
+
+        // Refresh UI to show this table's items
+        loadTableOrders();
+    }
+
+    private void loadTableOrders() {
+        productListPanel.removeAll();
+
+        // Add header again
+        JPanel header = new JPanel(new GridBagLayout());
+        header.setPreferredSize(new Dimension(0, 20));
+        header.setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
+        header.setBackground(Color.WHITE);
+        header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.BLACK));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridy = 0;
+        gbc.insets = new Insets(0, 0, 0, 5);
+        gbc.anchor = GridBagConstraints.WEST;
+
+        gbc.gridx = 0;
+        gbc.weightx = 0.02;
+        header.add(createHeaderLabel("No"), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 1.5;
+        header.add(createHeaderLabel("Name"), gbc);
+        gbc.gridx = 2;
+        gbc.weightx = 0.5;
+        header.add(createHeaderLabel("Qty"), gbc);
+        gbc.gridx = 3;
+        gbc.weightx = 0;
+        header.add(createHeaderLabel("Total"), gbc);
+
+        productListPanel.add(header);
+
+        if (currentTable != null) {
+            Map<String, ProductItem> productMap = tableOrders.get(currentTable);
+            if (productMap != null) {
+                for (ProductItem item : productMap.values()) {
+                    productListPanel.add(item.panel);
+                }
+            }
+            subtotal = tableSubtotals.getOrDefault(currentTable, 0.0);
+        }
+
+        updateTotals();
+        productListPanel.revalidate();
+        productListPanel.repaint();
     }
 
     // public void printToPrinter() {
