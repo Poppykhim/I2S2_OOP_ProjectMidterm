@@ -20,6 +20,11 @@ import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+
+import ui.FileStorageManager;
+import ui.OrderData;
+import ui.OrderData.OrderItem;
+
 import java.awt.*;
 
 import java.awt.event.MouseAdapter;
@@ -243,7 +248,6 @@ public class MenuRight extends javax.swing.JPanel {
     private static int receiptCounter = 1; // Add this line - it's missing from your code
 
     private void CompleteBtnActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
         if (productMap.isEmpty()) {
             JOptionPane.showMessageDialog(this,
                     "No items to complete!",
@@ -252,28 +256,68 @@ public class MenuRight extends javax.swing.JPanel {
             return;
         }
 
-        // Show confirmation dialog
         int result = JOptionPane.showConfirmDialog(this,
                 String.format("Complete order for %s?", currentTable),
                 "Confirm Order Completion",
                 JOptionPane.YES_NO_OPTION);
 
         if (result == JOptionPane.YES_OPTION) {
-            // Assign receipt number only when completing
-            int currentReceiptNumber = receiptCounter;
-            receiptCounter++; // Increment for next order
+            try {
+                // 🔹 Get next receipt number from FileStorageManager
+                int receiptNumber = FileStorageManager.getInstance().getNextReceiptNumber();
 
-            // Print the receipt with assigned number
-            printToPrinter(currentReceiptNumber);
+                // 🔹 Build list of OrderData.OrderItem from your productMap
+                List<OrderData.OrderItem> items = productMap.values().stream()
+                        .map(p -> new OrderData.OrderItem(
+                        p.name,
+                        p.type,
+                        p.size,
+                        p.ice,
+                        p.sugar,
+                        p.remark,
+                        p.quantity,
+                        p.unitPrice,
+                        receiptNumber // link to parent receipt
+                ))
+                        .collect(Collectors.toList());
 
-            // Clear the current table's order
-            clearCurrentOrder();
+                // 🔹 Build the OrderData object
+                OrderData order = new OrderData();
+                order.setReceiptNumber(receiptNumber);
+                order.setOrderDateTime(java.time.LocalDateTime.now());
+                order.setTableName(currentTable);
+                order.setStatus("Completed");
+                order.setItems(items);
+                order.calculateTotals(); // compute subtotal + grandTotal
 
-            // Show completion message
-            JOptionPane.showMessageDialog(this,
-                    String.format("Order #%04d completed successfully!", currentReceiptNumber),
-                    "Order Completed",
-                    JOptionPane.INFORMATION_MESSAGE);
+                // 🔹 Save the order persistently
+                boolean saved = FileStorageManager.getInstance().saveOrder(order);
+
+                if (saved) {
+                    // 🔹 Print receipt (your existing method)
+                    printToPrinter(receiptNumber);
+
+                    // 🔹 Clear order from UI
+                    clearCurrentOrder();
+
+                    JOptionPane.showMessageDialog(this,
+                            String.format("Order #%04d completed and saved successfully!", receiptNumber),
+                            "Order Completed",
+                            JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                            "Failed to save order. Please try again.",
+                            "Save Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this,
+                        "Unexpected error: " + ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
@@ -454,7 +498,6 @@ public class MenuRight extends javax.swing.JPanel {
         int orderNumber; // Add this field to store the original order number
         double unitPrice;
         JPanel panel;
-        JLabel qtyLabel;
         JLabel totalLabel;
         JLabel orderLabel; // Add reference to the order number label
         JSpinner qtySpinner;

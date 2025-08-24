@@ -27,6 +27,7 @@ public class UI {
         // mainPanel.add(introPanel, "Intro");
         mainPanel.add(new Signup(mainPanel, cardLayout, this), "SignUp");
         mainPanel.add(new Login(mainPanel, cardLayout, this), "Login");
+        mainPanel.add(new ReportPanel(mainPanel, cardLayout, this), "Report");
 
         menu = new Menu(mainPanel, cardLayout, this);
         mainPanel.add(menu, "Menu");

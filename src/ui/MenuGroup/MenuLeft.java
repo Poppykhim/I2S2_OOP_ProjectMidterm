@@ -1,7 +1,6 @@
 package ui.MenuGroup;
 
 import java.awt.CardLayout;
-
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import ui.UI;
@@ -101,6 +100,11 @@ public class MenuLeft extends javax.swing.JPanel {
         jLabel9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/flag-regular.png"))); // NOI18N
         jLabel9.setText("   Report");
         jLabel9.setForeground(new java.awt.Color(242, 242, 242)); // light gray/white
+        jLabel9.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                ui.fadeSwitchTo("Report");
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);

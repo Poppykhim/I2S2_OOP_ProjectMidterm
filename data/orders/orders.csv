@@ -1,0 +1,7 @@
+Receipt_Number,Date,Time,Table,Status,Subtotal,Discount,Grand_Total,Items_Count,Items_Detail
+1001,24-08-2025,23:16,Table 1,Completed,2.25,0.00,2.25,1,"Iced Americano(x1@2.25)"
+1002,24-08-2025,23:16,Table 5,Completed,2.75,0.00,2.75,1,"Iced Latte(x1@2.75)"
+1003,24-08-2025,23:16,Table 5,Completed,2.75,0.00,2.75,1,"Iced Latte(x1@2.75)"
+
+1003,24-08-2025,23:18,Table 2,Completed,1.95,0.00,1.95,1,"Hot Americano(x1@1.95)"
+1004,24-08-2025,23:20,null,Completed,9.00,0.00,9.00,1,"Iced Americano(x4@2.25)"
