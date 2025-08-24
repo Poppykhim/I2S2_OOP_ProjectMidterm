@@ -27,6 +27,8 @@ import java.awt.event.MouseAdapter;
 public class MenuRight extends javax.swing.JPanel {
 
     private final JPanel productListPanel;
+    // Add a counter for order numbers per table
+    private final Map<String, Integer> tableOrderCounters = new HashMap<>();
 
     public MenuRight() {
         initComponents();
@@ -238,10 +240,58 @@ public class MenuRight extends javax.swing.JPanel {
     private void SendBtnActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
     }
+    private static int receiptCounter = 1; // Add this line - it's missing from your code
 
     private void CompleteBtnActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
-        printToPrinter();
+        if (productMap.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "No items to complete!",
+                    "Empty Order",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // Show confirmation dialog
+        int result = JOptionPane.showConfirmDialog(this,
+                String.format("Complete order for %s?", currentTable),
+                "Confirm Order Completion",
+                JOptionPane.YES_NO_OPTION);
+
+        if (result == JOptionPane.YES_OPTION) {
+            // Assign receipt number only when completing
+            int currentReceiptNumber = receiptCounter;
+            receiptCounter++; // Increment for next order
+
+            // Print the receipt with assigned number
+            printToPrinter(currentReceiptNumber);
+
+            // Clear the current table's order
+            clearCurrentOrder();
+
+            // Show completion message
+            JOptionPane.showMessageDialog(this,
+                    String.format("Order #%04d completed successfully!", currentReceiptNumber),
+                    "Order Completed",
+                    JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private void clearCurrentOrder() {
+        // Clear the maps and UI
+        productMap.clear();
+        if (currentTable != null) {
+            tableOrders.put(currentTable, new HashMap<>());
+            tableSubtotals.put(currentTable, 0.0);
+            // Reset the order counter for this table
+            tableOrderCounters.put(currentTable, 0);
+        }
+
+        subtotal = 0.0;
+        discount = 0.0;
+
+        // Refresh UI
+        loadTableOrders();
     }
 
     public void addProductItem(String type, String name, int qty, double unitPrice, String size, String ice, String sugar, String remark, int maxQuantity) {
@@ -253,9 +303,13 @@ public class MenuRight extends javax.swing.JPanel {
             ProductItem item = productMap.get(key);
             item.quantity += qty;
             total = item.quantity * unitPrice;
-            item.qtyLabel.setText(String.valueOf(item.quantity));
+            item.qtySpinner.setValue(item.quantity);
             item.totalLabel.setText(String.format("%.2f$", total));
         } else {
+            // Get the next order number for this table
+            int orderNumber = tableOrderCounters.getOrDefault(currentTable, 0) + 1;
+            tableOrderCounters.put(currentTable, orderNumber);
+
             // Create new entry
             ProductItem item = new ProductItem();
             item.type = type;
@@ -266,6 +320,7 @@ public class MenuRight extends javax.swing.JPanel {
             item.unitPrice = unitPrice;
             item.quantity = qty;
             item.size = size;
+            item.orderNumber = orderNumber; // Store the order number
             total = unitPrice * qty;
 
             JPanel itemPanel = new JPanel(new BorderLayout());
@@ -285,7 +340,10 @@ public class MenuRight extends javax.swing.JPanel {
 
             gbc.gridx = 0;
             gbc.weightx = 0.1;
-            line1.add(new JLabel(String.valueOf(productListPanel.getComponentCount())), gbc); // No
+            // Use the stored order number instead of component count
+            JLabel orderLabel = new JLabel(String.valueOf(orderNumber));
+            item.orderLabel = orderLabel; // Store reference for updates if needed
+            line1.add(orderLabel, gbc);
 
             gbc.gridx = 1;
             gbc.weightx = 0.5;
@@ -293,8 +351,6 @@ public class MenuRight extends javax.swing.JPanel {
 
             gbc.gridx = 2;
             gbc.weightx = 0.2;
-            // item.qtyLabel = new JLabel(String.valueOf(qty));
-            // line1.add(item.qtyLabel, gbc);
 
             // Quantity Spinner
             SpinnerNumberModel qtyModel = new SpinnerNumberModel(qty, 1, maxQuantity + 1, 1); // start, min, max, step
@@ -395,10 +451,12 @@ public class MenuRight extends javax.swing.JPanel {
 
         String name, ice, sugar, remark, type, size;
         int quantity;
+        int orderNumber; // Add this field to store the original order number
         double unitPrice;
         JPanel panel;
         JLabel qtyLabel;
         JLabel totalLabel;
+        JLabel orderLabel; // Add reference to the order number label
         JSpinner qtySpinner;
 
     }
@@ -412,9 +470,13 @@ public class MenuRight extends javax.swing.JPanel {
 
         this.currentTable = tableName;
 
-        // Ensure this table has its own cart
+        // Update labels
+        jLabel1.setText(tableName); // Table name
+
+        // Ensure this table has its own cart and order counter
         tableOrders.putIfAbsent(tableName, new HashMap<>());
         tableSubtotals.putIfAbsent(tableName, 0.0);
+        tableOrderCounters.putIfAbsent(tableName, 0);
 
         // IMPORTANT: Clear current productMap and sync with selected table's data
         productMap.clear();
@@ -465,9 +527,17 @@ public class MenuRight extends javax.swing.JPanel {
         productListPanel.add(header);
 
         if (currentTable != null) {
-            Map<String, ProductItem> productMap = tableOrders.get(currentTable);
-            if (productMap != null) {
-                for (ProductItem item : productMap.values()) {
+            Map<String, ProductItem> tableProductMap = tableOrders.get(currentTable);
+            if (tableProductMap != null) {
+                // Sort items by their original order number to maintain correct sequence
+                List<ProductItem> sortedItems = new ArrayList<>(tableProductMap.values());
+                sortedItems.sort((a, b) -> Integer.compare(a.orderNumber, b.orderNumber));
+
+                for (ProductItem item : sortedItems) {
+                    // Update the order label to show the correct number
+                    if (item.orderLabel != null) {
+                        item.orderLabel.setText(String.valueOf(item.orderNumber));
+                    }
                     productListPanel.add(item.panel);
                 }
             }
@@ -479,39 +549,12 @@ public class MenuRight extends javax.swing.JPanel {
         productListPanel.repaint();
     }
 
-    // public void printToPrinter() {
-    //     PrinterJob printerJob = PrinterJob.getPrinterJob();
-    //     printerJob.setJobName("Receipt Print");
-    //     // Define how to print this panel
-    //     printerJob.setPrintable((graphics, pageFormat, pageIndex) -> {
-    //         if (pageIndex > 0) {
-    //             return java.awt.print.Printable.NO_SUCH_PAGE;
-    //         }
-    //         // Translate to printable area and scale
-    //         java.awt.Graphics2D g2d = (java.awt.Graphics2D) graphics;
-    //         g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
-    //         double scaleX = pageFormat.getImageableWidth() / this.getWidth();
-    //         double scaleY = pageFormat.getImageableHeight() / this.getHeight();
-    //         double scale = Math.min(scaleX, scaleY);
-    //         g2d.scale(scale, scale);
-    //         this.printAll(g2d); // You can also use print() for cleaner layout
-    //         return java.awt.print.Printable.PAGE_EXISTS;
-    //     });
-    //     // Show print dialog for printer selection
-    //     if (printerJob.printDialog()) {
-    //         try {
-    //             printerJob.print(); // Print to selected printer
-    //         } catch (PrinterException e) {
-    //             e.printStackTrace();
-    //         }
-    //     }
-    // }
-    public void printToPrinter() {
+    public void printToPrinter(int receiptNumber) {
         PrinterJob printerJob = PrinterJob.getPrinterJob();
 
         PageFormat pageFormat = printerJob.defaultPage();
         Paper paper = new Paper();
-        double paperWidth = 226; // 80mm ≈ 226 points
+        double paperWidth = 226;
         double paperHeight = 800;
         double margin = 10;
 
@@ -519,39 +562,32 @@ public class MenuRight extends javax.swing.JPanel {
         paper.setImageableArea(margin, margin, paperWidth - (2 * margin), paperHeight - (2 * margin));
         pageFormat.setPaper(paper);
         pageFormat.setOrientation(PageFormat.PORTRAIT);
-        // Create the printable content
-        Printable printable;
-        printable = new Printable() {
+
+        Printable printable = new Printable() {
             @Override
             public int print(Graphics graphics, PageFormat pf, int pageIndex) throws PrinterException {
                 if (pageIndex > 0) {
                     return java.awt.print.Printable.NO_SUCH_PAGE;
                 }
 
-                // Create a clean receipt layout for printing
                 Graphics2D g2d = (Graphics2D) graphics;
                 g2d.translate(pf.getImageableX(), pf.getImageableY());
-
-                // Set rendering hints
                 g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-                // Create a custom receipt layout instead of printing the entire panel
-                printReceipt(g2d, pf);
+                // Pass the receipt number to print method
+                printReceipt(g2d, pf, receiptNumber);
 
                 return java.awt.print.Printable.PAGE_EXISTS;
             }
         };
 
-        // Show print preview dialog
         PrintPreviewDialog previewDialog = new PrintPreviewDialog((Frame) SwingUtilities.getWindowAncestor(this),
                 printable, pageFormat);
-        java.awt.Window window = SwingUtilities.getWindowAncestor(this);
-        java.awt.Frame frame = (window instanceof java.awt.Frame) ? (java.awt.Frame) window : null;
         previewDialog.setVisible(true);
     }
     // Add this method to create a cleaner receipt layout
 
-    private void printReceipt(Graphics2D g2d, PageFormat pageFormat) {
+    private void printReceipt(Graphics2D g2d, PageFormat pageFormat, int receiptNumber) {
         Font titleFont = new Font("SansSerif", Font.BOLD, 16);
         Font normalFont = new Font("SansSerif", Font.PLAIN, 12);
         Font smallFont = new Font("SansSerif", Font.PLAIN, 10);
@@ -559,9 +595,8 @@ public class MenuRight extends javax.swing.JPanel {
         double width = pageFormat.getImageableWidth();
         int y = 20;
         int lineHeight = 15;
-        int margin = 0; // Already handled by imageable area
+        int margin = 0;
 
-        // Column positions (fit in ~206 points width)
         int colItem = margin;
         int colQty = 120;
         int colTotal = 170;
@@ -571,11 +606,12 @@ public class MenuRight extends javax.swing.JPanel {
         g2d.drawString("RECEIPT", (int) (width / 2) - 30, y);
         y += lineHeight * 2;
 
-        // Order info
+        // Order info with assigned receipt number
         g2d.setFont(normalFont);
-        g2d.drawString("Order #XXXX", colItem, y);
-        g2d.drawString(new java.util.Date().toString(), colItem, y + lineHeight);
-        y += lineHeight * 3;
+        g2d.drawString(String.format("Order #%04d", receiptNumber), colItem, y);
+        g2d.drawString("Table: " + (currentTable != null ? currentTable : "N/A"), colItem, y + lineHeight);
+        g2d.drawString(new java.util.Date().toString(), colItem, y + (lineHeight * 2));
+        y += lineHeight * 4;
 
         // Header
         g2d.setFont(normalFont);
@@ -612,20 +648,7 @@ public class MenuRight extends javax.swing.JPanel {
                     g2d.setColor(Color.BLACK);
                     y += lineHeight;
                 }
-            } else {
-                g2d.setColor(Color.GRAY);
-                g2d.drawString("", colItem + 10, y);
-                g2d.setColor(Color.BLACK);
-                y += lineHeight;
             }
-
-            // Options
-            // if (item.ice != null || item.sugar != null) {
-            //     g2d.setColor(Color.GRAY);
-            //     g2d.drawString("Ice: " + item.ice + " | Sugar: " + item.sugar, colItem + 10, y);
-            //     g2d.setColor(Color.BLACK);
-            //     y += lineHeight;
-            // }
         }
 
         // Totals
@@ -645,7 +668,6 @@ public class MenuRight extends javax.swing.JPanel {
         g2d.setFont(titleFont);
         g2d.drawString("Grand Total:", colItem, y);
         drawRightAligned(g2d, GrandTotal.getText(), (int) width, y);
-
     }
 
     private void drawRightAligned(Graphics2D g2d, String text, int rightEdge, int y) {

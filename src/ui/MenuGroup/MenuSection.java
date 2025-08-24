@@ -315,7 +315,6 @@ public class MenuSection extends javax.swing.JPanel {
         public ProductPanel(Product product) {
             super(30);
             setLayout(new BorderLayout(10, 0));
-            // setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
             setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
             setBackground(Color.WHITE);
             setPreferredSize(new java.awt.Dimension(160, 100));
