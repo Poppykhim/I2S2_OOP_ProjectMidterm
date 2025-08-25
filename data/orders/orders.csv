@@ -5,3 +5,4 @@ Receipt_Number,Date,Time,Table,Status,Subtotal,Discount,Grand_Total,Items_Count,
 
 1003,24-08-2025,23:18,Table 2,Completed,1.95,0.00,1.95,1,"Hot Americano(x1@1.95)"
 1004,24-08-2025,23:20,null,Completed,9.00,0.00,9.00,1,"Iced Americano(x4@2.25)"
+1005,25-08-2025,07:30,Table 1,Completed,19.25,0.00,19.25,3,"Chicken Rice(x3@4.25); Lok Lak(x1@4.25); Iced Americano(x1@2.25)"
